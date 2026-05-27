@@ -1,0 +1,87 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-test:
+    name: Build & Test
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Read target version
+        id: version
+        run: echo "version=$(cat VERSION)" >> "$GITHUB_OUTPUT"
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Build image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          load: true
+          tags: aws-ses-v2-local:test
+          build-args: |
+            SES_VERSION=${{ steps.version.outputs.version }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Start container
+        run: |
+          docker run -d --name ses-test -p 8005:8005 aws-ses-v2-local:test
+          for i in $(seq 1 30); do
+            if wget --spider -q http://localhost:8005 2>/dev/null; then
+              echo "SES local is up"
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "SES local failed to start"
+          docker logs ses-test
+          exit 1
+
+      - name: Smoke test — send email via SES API
+        run: |
+          aws sesv2 send-email \
+            --endpoint-url http://localhost:8005 \
+            --region us-east-1 \
+            --from-email-address test@example.com \
+            --destination '{"ToAddresses":["recipient@example.com"]}' \
+            --content '{"Simple":{"Subject":{"Data":"Test"},"Body":{"Text":{"Data":"Hello"}}}}'
+        env:
+          AWS_ACCESS_KEY_ID: test
+          AWS_SECRET_ACCESS_KEY: test
+
+      - name: Verify email was captured
+        run: |
+          response=$(wget -qO- http://localhost:8005/store)
+          echo "$response"
+          echo "$response" | grep -q "test@example.com"
+
+      - name: Test custom port via env var
+        run: |
+          docker run -d --name ses-custom-port -e PORT=9999 -p 9999:9999 aws-ses-v2-local:test
+          for i in $(seq 1 30); do
+            if wget --spider -q http://localhost:9999 2>/dev/null; then
+              echo "SES local is up on custom port"
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "SES local failed to start on custom port"
+          docker logs ses-custom-port
+          exit 1
+
+      - name: Cleanup
+        if: always()
+        run: |
+          docker rm -f ses-test ses-custom-port 2>/dev/null || true
