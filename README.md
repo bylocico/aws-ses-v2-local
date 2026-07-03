@@ -8,15 +8,15 @@ Published to GHCR so you can pull a pre-built image instead of building from sou
 
 The Docker image version tracks the upstream npm package version.
 
-For example, `ghcr.io/bylocico/aws-ses-v2-local:2.9.0` contains `aws-ses-v2-local@2.9.0`.
+For example, `ghcr.io/bylocico/aws-ses-v2-local:2.9.2` contains `aws-ses-v2-local@2.9.2`.
 
 A scheduled workflow checks npm daily for new releases, builds and smoke-tests each one, and opens an auto-merge PR that retargets the image to the latest passing version.
 
 ## Usage
 
 ```bash
-docker pull ghcr.io/bylocico/aws-ses-v2-local:2.9.0
-docker run -p 8005:8005 ghcr.io/bylocico/aws-ses-v2-local:2.9.0
+docker pull ghcr.io/bylocico/aws-ses-v2-local:2.9.2
+docker run -p 8005:8005 ghcr.io/bylocico/aws-ses-v2-local:2.9.2
 ```
 
 ### Docker Compose
@@ -24,7 +24,7 @@ docker run -p 8005:8005 ghcr.io/bylocico/aws-ses-v2-local:2.9.0
 ```yaml
 services:
   ses-local:
-    image: ghcr.io/bylocico/aws-ses-v2-local:2.9.0
+    image: ghcr.io/bylocico/aws-ses-v2-local:2.9.2
     ports:
       - "${SES_LOCAL_PORT:-8005}:8005"
     healthcheck:
@@ -40,7 +40,7 @@ services:
 ```yaml
 services:
   ses-local:
-    image: ghcr.io/bylocico/aws-ses-v2-local:2.9.0
+    image: ghcr.io/bylocico/aws-ses-v2-local:2.9.2
     environment:
       - PORT=9000
     ports:
@@ -52,7 +52,7 @@ services:
 ```yaml
 services:
   ses-local:
-    image: ghcr.io/bylocico/aws-ses-v2-local:2.9.0
+    image: ghcr.io/bylocico/aws-ses-v2-local:2.9.2
     environment:
       - HOST=::
       - PORT=8005
@@ -116,21 +116,21 @@ node scripts/update-version.mjs --list-newer
 Retarget to a specific version:
 
 ```bash
-node scripts/update-version.mjs --version 2.9.0
+node scripts/update-version.mjs --version 2.9.2
 ```
 
 ## Publishing
 
 Publishing is handled by [`.github/workflows/publish.yml`](.github/workflows/publish.yml). It runs on **published GitHub Releases** and on **manual workflow dispatch**.
 
-The workflow builds multi-arch images (`linux/amd64`, `linux/arm64`) and pushes to GHCR with version tags (`2.9.0`, `2.9`, `2`, `latest`).
+The workflow builds multi-arch images (`linux/amd64`, `linux/arm64`) and pushes to GHCR with version tags (`2.9.2`, `2.9`, `2`, `latest`).
 
 ### Release checklist
 
-1. Confirm the npm version exists: `npm view aws-ses-v2-local@2.9.0 version`
+1. Confirm the npm version exists: `npm view aws-ses-v2-local@2.9.2 version`
 2. Update `VERSION`, `Dockerfile`, and `README.md` (or run `node scripts/update-version.mjs --version X.Y.Z`)
 3. Push to `main`
-4. Create a GitHub Release with tag `v2.9.0`
+4. Create a GitHub Release with tag `v2.9.2`
 
 ## License
 
