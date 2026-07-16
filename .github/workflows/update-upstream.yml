@@ -23,7 +23,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 22.x
+          node-version: 24.x
 
       - id: discover
         shell: bash
@@ -55,7 +55,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 22.x
+          node-version: 24.x
 
       - name: Retarget to ${{ matrix.ses_version }}
         run: node scripts/update-version.mjs --version "${{ matrix.ses_version }}"
@@ -119,7 +119,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 22.x
+          node-version: 24.x
 
       - run: node scripts/update-version.mjs --version "${{ needs.discover.outputs.latest }}"
 
