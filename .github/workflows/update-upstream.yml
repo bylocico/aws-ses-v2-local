@@ -124,7 +124,7 @@ jobs:
       - run: node scripts/update-version.mjs --version "${{ needs.discover.outputs.latest }}"
 
       - id: create-pr
-        uses: peter-evans/create-pull-request@v7
+        uses: peter-evans/create-pull-request@v8
         with:
           branch: chore/update-ses-${{ needs.discover.outputs.latest }}
           delete-branch: true
